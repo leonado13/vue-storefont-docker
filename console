@@ -1,0 +1,122 @@
+#!/usr/bin/env bash
+
+# Some text formatting
+bold=$(tput bold)
+reset=$(tput sgr0)
+purple=$(tput setaf 171)
+red=$(tput setaf 1)
+green=$(tput setaf 76)
+tan=$(tput setaf 3)
+blue=$(tput setaf 38)
+underline=$(tput sgr 0 1)
+
+##
+# Tries to identify the current OS
+UNAMEOUT="$(uname -s)"
+case "${UNAMEOUT}" in
+    Linux*)     MACHINE=linux;;
+    Darwin*)    MACHINE=mac;;
+    MINGW64_NT-10.0*)   MACHINE=mingw64;;
+    *)          MACHINE="UNKNOWN"
+esac
+
+if [ "${MACHINE}" == "UNKNOWN" ]; then
+    echo "${bold}${red}Unsupported system type${reset}"
+    echo "System must be a Macintosh or Linux or maybe..., Windows"
+    echo ""
+    echo "System detection determined via uname command"
+    echo "If the following is empty, could not find uname command: $(which uname)"
+    echo "Your reported uname is: $(uname -s)"
+    exit 0
+fi
+
+##
+# Gets the current UID.
+export WWWUSER=${WWWUSER:-$UID}
+
+##
+# Sets the XDEBUG_HOST variable
+if [ "${MACHINE}" == "linux" ]; then
+    if grep -q Microsoft /proc/version; then # WSL
+        export XDEBUG_HOST=docker.for.win.localhost
+    else
+        if [ "$(command -v ip)" ]; then
+            export XDEBUG_HOST=$(ip addr show docker0 | grep "inet\b" | awk '{print $2}' | cut -d/ -f1)
+        else
+            export XDEBUG_HOST=$(ifconfig docker0 | grep "inet addr" | cut -d ':' -f 2 | cut -d ' ' -f 1)
+        fi
+    fi
+    RLINKCMD="readlink"
+elif [ "${MACHINE}" == "mac" ]; then
+    RLINKCMD="greadlink"
+    export XDEBUG_HOST=docker.for.mac.host.internal
+elif [ "${MACHINE}" == "mingw64" ]; then # Git Bash
+    export XDEBUG_HOST=docker.for.win.localhost
+fi
+
+# this will 'try' to get this script root path even when you run it
+# anywhere else than it's root directory
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "${SOURCE}" ]; do # resolve $SOURCE until the file is no longer a symlink
+  DIR="$( cd -P "$( dirname "${SOURCE}" )" && pwd )"
+  SOURCE="$(${RLINKCMD} "${SOURCE}")"
+  [[ ${SOURCE} != /* ]] && SOURCE="${DIR}/${SOURCE}" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+done
+DIR="$( cd -P "$( dirname "${SOURCE}" )" && pwd )"
+
+scriptName=${SOURCE}
+scriptRootDir=${DIR}
+binDir=${scriptRootDir}/bin
+srcDir=${scriptRootDir}/src
+appGitDir="git@github.com:DivanteLtd/vue-storefront.git"
+appRootDir=${srcDir}/vue-storefront
+apiGitDir="git@github.com:DivanteLtd/vue-storefront-api.git"
+apiRootDir=${srcDir}/vue-storefront-api
+
+# Shows script usage help
+function usage() {
+  echo -n "
+
+${tan}Usage:${reset}
+    console [command|service] [arguments]
+
+
+${tan}Commands:${reset}
+    install         This command will:
+                    1. Clone all projects's repositories
+                    2. Builds the stack
+                    3. Starts the stack
+
+                    ${tan}Extra options:${reset}
+                    --force     If you want to reinstall all applications.
+                                All applications directories will be removed and reinstalled!!!
+
+    start           Starts Environments
+
+    stop            Stops Environments
+
+    run             Runs docker-compose commands against the Dockertools stack
+
+${tan}Services:${reset}
+    app          Unity3 (Magento Platform) - (${underline}https://github.com/DivanteLtd/vue-storefront${reset})
+    api        Jarvis Exchange - (${underline}https://github.com/DivanteLtd/vue-storefront-api${reset})
+
+"
+}
+
+set -o errexit
+set -o pipefail
+
+
+: '
+Decides which command to run.
+It can either run commands relative to the whole dockertools or to an specific application
+'
+case "$1" in
+
+    ##
+    # Fallback to usage
+    *)
+        usage
+    ;;
+esac
