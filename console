@@ -70,8 +70,10 @@ binDir=${scriptRootDir}/bin
 srcDir=${scriptRootDir}/src
 appGitDir="git@github.com:DivanteLtd/vue-storefront.git"
 appRootDir=${srcDir}/vue-storefront
+appScript=${binDir}/app.sh
 apiGitDir="git@github.com:DivanteLtd/vue-storefront-api.git"
 apiRootDir=${srcDir}/vue-storefront-api
+apiScript=${binDir}/api.sh
 
 # Shows script usage help
 function usage() {
@@ -113,6 +115,10 @@ Decides which command to run.
 It can either run commands relative to the whole dockertools or to an specific application
 '
 case "$1" in
+    install)
+        ${appScript} install
+        ${apiScript} install
+    ;;
 
     ##
     # Fallback to usage

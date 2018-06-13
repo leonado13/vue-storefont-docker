@@ -17,9 +17,9 @@ ${tan}Commands:${reset}
 case "$1" in
     install)
         if [ -d "${apiRootDir}" ]; then
-            echo "API already installed"
+            echo "API already cloned"
         else
-            git clone --recursive git@gitlab.production.smartbox.com:web/booking.git "${apiRootDir}"
+            git clone --recursive ${apiGitDir} ${apiRootDir}
         fi
     ;;
 
