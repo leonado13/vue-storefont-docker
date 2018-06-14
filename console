@@ -77,6 +77,9 @@ apiScript=${binDir}/api.sh
 
 application=('app' 'api')
 
+# Create base docker-compose command to run
+COMPOSE="docker-compose -f ${scriptRootDir}/docker-compose.yml"
+
 # Shows script usage help
 function usage() {
   echo -n "

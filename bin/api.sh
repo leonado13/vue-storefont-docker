@@ -23,6 +23,16 @@ case "$1" in
         fi
     ;;
 
+    build)
+        ${COMPOSE} exec api npm install
+        if [ -f "${apiRootDir}/config/local.json" ]; then
+            echo "API local json is ready"
+        else
+            cp "${apiRootDir}/config/default.json" "${apiRootDir}/config/local.json"
+        fi
+        ${COMPOSE} exec api npm run setup
+    ;;
+
     exec)
         shift 1
         if [ "${EXEC}" == "yes" ]; then

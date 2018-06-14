@@ -1,0 +1,46 @@
+version: '2'
+
+services:
+  app:
+    image: node:8.11.3
+    volumes:
+      - ./src/vue-storefront/:/src/vue-storefront/
+    working_dir: /src/vue-storefront/
+    ports:
+      - "80:3000"
+    tty: true
+  api:
+    image: node:8.11.3
+    volumes:
+      - ./src/vue-storefront-api/:/src/vue-storefront-api/
+    working_dir: /src/vue-storefront-api/
+    ports:
+      - "8080:8080"
+    tty: true
+  es1:
+    extends:
+      file: src/vue-storefront-api/docker-compose.yml
+      service: es1
+  es2:
+    extends:
+      file: src/vue-storefront-api/docker-compose.yml
+      service: es2
+
+  kibana:
+    extends:
+      file: src/vue-storefront-api/docker-compose.yml
+      service: kibana
+
+  redis:
+    extends:
+      file: src/vue-storefront-api/docker-compose.yml
+      service: redis
+
+volumes:
+  esdat1:
+    driver: local
+  esdat2:
+    driver: local
+
+networks:
+  esnet:
