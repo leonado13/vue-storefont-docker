@@ -75,6 +75,8 @@ apiGitDir="git@github.com:DivanteLtd/vue-storefront-api.git"
 apiRootDir=${srcDir}/vue-storefront-api
 apiScript=${binDir}/api.sh
 
+application=('app' 'api')
+
 # Shows script usage help
 function usage() {
   echo -n "
@@ -116,8 +118,21 @@ It can either run commands relative to the whole dockertools or to an specific a
 '
 case "$1" in
     install)
-        ${appScript} install
-        ${apiScript} install
+        for i in "${application[@]}"; do
+            ${scriptName} "${i}" install
+        done
+    ;;
+
+    # APP
+    app)
+        shift 1
+        . ${appScript}
+    ;;
+
+    # API
+    api)
+        shift 1
+        . ${apiScript}
     ;;
 
     ##
